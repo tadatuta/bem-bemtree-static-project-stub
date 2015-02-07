@@ -15,11 +15,10 @@ var techs = {
         prependYm: require('enb-modules/techs/prepend-modules'),
 
         // bemtree
-        // bemtree: require('enb-bemxjst/techs/bemtree-old'),
+        bemtree: require('enb-bemxjst/techs/bemtree-old'),
 
         // bemhtml
-        bemhtml: require('enb-bemxjst/techs/bemhtml-old'),
-        htmlFromBemjson: require('enb-bemxjst/techs/html-from-bemjson')
+        bemhtml: require('enb-bemxjst/techs/bemhtml-old')
     },
     enbBemTechs = require('enb-bem-techs'),
     levels = [
@@ -40,8 +39,7 @@ module.exports = function(config) {
         nodeConfig.addTechs([
             // essential
             [enbBemTechs.levels, { levels: levels }],
-            [techs.fileProvider, { target: '?.bemjson.js' }],
-            [enbBemTechs.bemjsonToBemdecl],
+            [techs.fileProvider, { target: '?.bemdecl.js' }],
             [enbBemTechs.deps],
             [enbBemTechs.files],
 
@@ -54,11 +52,12 @@ module.exports = function(config) {
             }],
 
             // bemtree
-            // [techs.bemtree, { devMode: process.env.BEMTREE_ENV === 'development' }],
+            [techs.bemtree, { devMode: process.env.BEMTREE_ENV === 'development' }],
 
             // bemhtml
             [techs.bemhtml, { devMode: process.env.BEMHTML_ENV === 'development' }],
-            [techs.htmlFromBemjson],
+
+            [require('./techs/bemtreeToHtml')],
 
             // client bemhtml
             [enbBemTechs.depsByTechToBemdecl, {
@@ -94,6 +93,6 @@ module.exports = function(config) {
             [techs.borschik, { sourceTarget: '?.css', destTarget: '_?.css', tech: 'cleancss', freeze: true, minify: isProd }]
         ]);
 
-        nodeConfig.addTargets([/* '?.bemtree.js', */ '?.html', '_?.css', '_?.js']);
+        nodeConfig.addTargets(['?.bemtree.js', '?.html', '_?.css', '_?.js']);
     });
 };

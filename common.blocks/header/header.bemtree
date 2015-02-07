@@ -1,0 +1,21 @@
+block('header').content()(function() {
+    return [
+        {
+            block: 'logo'
+        },
+        {
+            block: 'breadcrumbs'
+        },
+        {
+            elem: 'item',
+            content: [
+                {
+                    block: 'lang-switcher'
+                },
+                {
+                    block: 'search'
+                }
+            ]
+        }
+    ];
+});

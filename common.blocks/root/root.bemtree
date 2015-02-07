@@ -1,0 +1,20 @@
+match(function() {
+    return !this._root;
+})(function() {
+    return applyNext({
+        _root: true,
+        ctx: {
+            block: 'page',
+            title: 'TODO',
+            head: [
+                { elem: 'css', url: '_index.css' }
+            ],
+            scripts: [
+                { elem: 'css', url: '_index.js' }
+            ],
+            mods: {
+                theme: 'islands'
+            }
+        }
+    });
+});
