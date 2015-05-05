@@ -46,7 +46,7 @@ module.exports = require('enb/lib/build-flow').create()
                 return [ctx.BEMTREE, bemhtml.BEMHTML];
             })
             .spread(function(BEMTREE, BEMHTML) {
-                return BEMTREE.apply({})
+                return BEMTREE.apply({ block: 'root' })
                     .then(function(bemjson) {
                         return BEMHTML.apply(bemjson);
                     });
