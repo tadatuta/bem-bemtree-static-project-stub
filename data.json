@@ -1,0 +1,32 @@
+{
+    "cars" : {
+        "toyota" : {
+            "prius" : {
+                "colors" : {
+                    "c1" : "qwe",
+                    "c2" : "asd"
+                }
+            },
+            "camry" : {
+                "colors" : {
+                    "c1" : "123",
+                    "c2" : "456"
+                }
+            }
+        },
+        "mercedes" : {
+            "benz" : {
+                "colors" : {
+                    "c1" : "black",
+                    "c2" : "red"
+                }
+            },
+            "blah" : {
+                "colors" : {
+                    "c1" : "white",
+                    "c2" : "silver"
+                }
+            }
+        }
+    }
+}

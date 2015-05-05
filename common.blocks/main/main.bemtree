@@ -1,0 +1,33 @@
+block('main').content()(function() {
+    var cars = this.data.cars,
+        carNames = Object.keys(cars),
+        firstCar = carNames[0],
+        firstCarModels = Object.keys(cars[firstCar]);
+
+    return [
+        {
+            block : 'select',
+            mods : { mode : 'radio', theme : 'islands', size : 'xl' },
+            mix : { block: this.block, elem: 'car' },
+            name : 'car',
+            val : firstCar,
+            options : carNames.map(function(car) {
+                return { val : car, text : car };
+            })
+        },
+        {
+            block : 'select',
+            mods : { mode : 'radio', theme : 'islands', size : 'xl' },
+            mix : { block: this.block, elem: 'model' },
+            name : 'model',
+            val : firstCarModels[0],
+            options : firstCarModels.map(function(model) {
+                return { val : model, text : model };
+            })
+        },
+        {
+            block: 'modal',
+            mods: { theme: 'islands', autoclosable : true }
+        }
+    ];
+});
