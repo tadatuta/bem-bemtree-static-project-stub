@@ -2,29 +2,29 @@ block('main').content()(function() {
     var cars = this.data.cars,
         carNames = Object.keys(cars),
         firstCar = carNames[0],
-        firstCarModels = Object.keys(cars[firstCar]);
+        firstCarModels = Object.keys(cars[firstCar]),
+        firstModel = firstCarModels[0],
+        firstModelYears = Object.keys(cars[firstCar][firstModel]);
+
+    function buildSelectOption(val) {
+        return { val : val, text : val };
+    }
+
+    function buildSelect(name, options) {
+        return {
+            block : 'select',
+            mods : { mode : 'radio', theme : 'islands', size : 'xl' },
+            mix : { block: 'main', elem: name },
+            name : name,
+            val : options[0],
+            options : options.map(buildSelectOption)
+        };
+    }
 
     return [
-        {
-            block : 'select',
-            mods : { mode : 'radio', theme : 'islands', size : 'xl' },
-            mix : { block: this.block, elem: 'car' },
-            name : 'car',
-            val : firstCar,
-            options : carNames.map(function(car) {
-                return { val : car, text : car };
-            })
-        },
-        {
-            block : 'select',
-            mods : { mode : 'radio', theme : 'islands', size : 'xl' },
-            mix : { block: this.block, elem: 'model' },
-            name : 'model',
-            val : firstCarModels[0],
-            options : firstCarModels.map(function(model) {
-                return { val : model, text : model };
-            })
-        },
+        buildSelect('car', carNames),
+        buildSelect('model', firstCarModels),
+        buildSelect('year', firstModelYears),
         {
             block: 'modal',
             mods: { theme: 'islands', autoclosable : true }
