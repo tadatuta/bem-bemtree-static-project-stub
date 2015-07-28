@@ -1,4 +1,6 @@
 block('root').def()(function() {
+    this.data = this.ctx.data;
+
     return applyCtx({
         block: 'page',
         title: 'TODO',

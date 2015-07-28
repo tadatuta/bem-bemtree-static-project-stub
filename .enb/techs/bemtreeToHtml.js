@@ -17,10 +17,12 @@
  * ```
  */
 var vm = require('vm'),
+    path = require('path'),
     vow = require('vow'),
     vfs = require('enb/lib/fs/async-fs'),
     asyncRequire = require('enb/lib/fs/async-require'),
-    dropRequireCache = require('enb/lib/fs/drop-require-cache');
+    dropRequireCache = require('enb/lib/fs/drop-require-cache'),
+    dataFilename = path.resolve('data.json');
 
 module.exports = require('enb/lib/build-flow').create()
     .name('html-from-bemtree')
@@ -29,10 +31,11 @@ module.exports = require('enb/lib/build-flow').create()
     .useSourceFilename('bemhtmlTarget', '?.bemhtml.js')
     .builder(function(bemtreeFilename, bemhtmlFilename) {
         dropRequireCache(require, bemhtmlFilename);
+        dropRequireCache(require, dataFilename);
 
         return vow.all([
                 vfs.read(bemtreeFilename, 'utf-8'),
-                asyncRequire(bemhtmlFilename)
+                asyncRequire(bemhtmlFilename),
             ])
             .spread(function(bemtree, bemhtml) {
                 var ctx = vm.createContext({
@@ -46,7 +49,7 @@ module.exports = require('enb/lib/build-flow').create()
                 return [ctx.BEMTREE, bemhtml.BEMHTML];
             })
             .spread(function(BEMTREE, BEMHTML) {
-                return BEMTREE.apply({ block: 'root' })
+                return BEMTREE.apply({ block: 'root', data: require(dataFilename) })
                     .then(function(bemjson) {
                         return BEMHTML.apply(bemjson);
                     });
