@@ -1,15 +1,13 @@
-block('root').def()(function() {
-    return applyCtx({
+block('root').replace()(function() {
+    return {
         block: 'page',
         title: 'TODO',
         head: [
-            { elem: 'css', url: '_index.css' }
+            { elem: 'css', url: 'index.min.css' }
         ],
         scripts: [
-            { elem: 'js', url: '_index.js' }
+            { elem: 'js', url: 'index.min.js' }
         ],
-        mods: {
-            theme: 'islands'
-        }
-    });
+        mods: { theme: 'islands' }
+    };
 });
