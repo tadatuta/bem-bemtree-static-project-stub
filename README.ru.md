@@ -1,97 +1,196 @@
-# Как начать работать с проектом
+# Трехзвенная архитектура в БЭМ
 
-[Project-stub](https://github.com/bem/project-stub) – это шаблонный репозиторий для создания БЭМ-проектов. Он содержит необходимый минимум конфигурационных файлов и папок, который позволяет быстро развернуть проект с нуля.  
-В project-stub по умолчанию подключены основные БЭМ-библиотеки:   
+У нас есть документация про технологии БЭМ платформы (BEMJSON, BEMTREE, BEMHTML, DEPS), но практически нет туториалов по использованию их всех вместе. Есть [несколько исключений](https://ru.bem.info/articles/bem-full-stack-site/), но они достаточно объемные и сложноваты для восприятия.
 
-* [bem-core](https://github.com/bem/bem-core)  
-* [bem-components](https://github.com/bem/bem-components)  
+Я написал простой пример, рассчитанный на тех, кто уже немного освоился в версткой на основе [project-stub](https://ru.bem.info/tutorials/project-stub/) и хочет продолжить свое знакомство с платформой.
 
-Попробуй БЭМ на вкус!
+Пусть у нас есть следующий файл с данными **data.json**:
+```json
+{
+    "user": "mathetes",
+    "company": "WebExcel",
+    "city": "Novosibirsk"
+};
+```
+Как вариант, данные могут приходить из БД или через HTTP API — источник не играет роли.
 
-## Требования к установке
+Наша задача сгенерировать на основе этих данных HTML, который будет представлять собой страницу с логотипом в шапке, карточкой пользователя в основной части и копирайтом в подвале.
 
-* [Node.js](http://nodejs.org) – это программная платформа, основанная на языке JavaScript и позволяющая легко создавать быстрые и масштабируемые сетевые приложения.
+Первым шагом необходимо из исходных сырых данных получить [BEMJSON](https://ru.bem.info/technology/bemjson), описывающий страницу. Для этого будем использовать технологию [BEMTREE](https://ru.bem.info/technology/bemtree). При этом договоримся, что в качестве корневого блока, на основе которого будет строиться дерево, возьмем блок `page`.
 
-## Установка
-
-Вы даже не представляете, насколько легко создать свой БЭМ-проект? *Очень легко*!
-
-Начнем...
-
-    git clone https://github.com/bem/project-stub.git -b bem-core my-bem-project  
-    cd my-bem-project      
-    npm install  
-
-## Практическое применение 
-
-Теперь вызов всех команд [bem-tools](https://ru.bem.info/tools/bem/bem-tools/) возможен так `./node_modules/bem/bin/bem`. Чтоб каждый раз не указывать путь к исполняемому файлу (./node_modules/bem/bin/bem), необходимо установить npm-пакет bem-cli:
-
-`npm install -g bem-cli` или использовать альтернативный метод `export PATH=./node_modules/.bin:$PATH`
-
-
-### Базовые команды
-
-**Старт сервера**
-
-```bash
-bem server # bem server -p 8080 -v info|silly|debug|verbose|warn|error
+В результате должен получиться следующий BEMJSON:
+```js
+{
+    block: 'page',
+    content: [
+        {
+            block: 'header',
+            content: {
+                block: 'logo'
+            }
+        },
+        {
+            block: 'main',
+            content: {
+                block: 'user',
+                content: 'тут-содержимое-карточки-пользователя'
+            }
+        },
+        {
+            block: 'footer',
+            content: '© 2015 SuperPuper'
+        }
+    ]
+}
 ```
 
-> **подсказка** все команды необходимо выполнять в терминале локально
+BEMTREE-шаблон для блока `page` должен построить шапку, основную часть и подвал:
+```js
+block('page').content()(function() {
+    return [
+        { block: 'header' },
+        { block: 'main' },
+        { block: 'footer' }
+    ];
+]);
+```
 
-На вашем компьютере запустился БЭМ-сервер, чтобы проверить это:
+По техзаданию в шапке должен быть логотип. Тогда шаблон шапки может выглядеть так:
+```js
+block('header').content()(function(){
+    return { block: 'logo' };
+});
+```
 
-    Откройте в браузере http://localhost:8080/desktop.bundles/index/index.html
+В основной части нужна карточка пользователя. Так что нам потребуется доступ к данным из файла **data.json**. Но пока отложим этот момент и захардкодим какие-то тестовые данные:
 
-Остановить сервер также просто: комбинация клавиш `Ctrl` + `C` в активном окне терминала остановит сервер.
+```js
+block('main').content()(function() {
+    return {
+        block: 'user',
+        content: [
+            {
+                elem: 'name',
+                content: 'test name'
+            },
+            {
+                elem: 'company',
+                content: 'test company'
+            },
+            {
+                elem: 'city',
+                content: 'test city'
+            }
+        ]
+    };
+});
+```
 
-**Создание блока**  
+В подвале нужен копирайт:
+```js
+block('footer').content()('© 2015 SuperPuper');
+```
 
-    bem create -l desktop.blocks -b newBlock
+Теперь, когда мы знаем, какие потребуются шаблоны, нужно скомпилировать BEMTREE-[бандл](https://ru.bem.info/method/build/#Результаты-сборки), который будет включать ядро самого шаблонизатора и код шаблонов.
 
-**Создание страницы**
+В самом простом случае мы можем сохранить все шаблоны в один файл, установить пакет [bem-xjst](https://ru.bem.info/tools/templating-engines/bemxjst/) и с его помощью скомпилировать бандл:
+```
+bem-xjst -i path/to/templates.js -o bundle.bemtree.js
+```
 
-    bem create -l desktop.bundles -b page
+Но раз мы хотим следовать [рекомендации БЭМ методологии](https://ru.bem.info/method/filesystem/) и раскладывать каждый шаблон в папку соответствующего блока, то нам потребуется какой-то способ потом эти шаблоны собрать вместе. Для этого подойдет сборщик [ENB](https://ru.bem.info/tools/bem/enb-bem/).
 
-> **совет** Вы можете еще больше упростить работу с сервером, прописав альтернативные имена:
+Схема работы `ENB` подробно описана в [этом документе](https://ru.bem.info/tools/bem/enb-bem-techs/build-bundle/). Главное, что нас сейчас интересует — это то, что `ENB` собирает файлы только тех сущностей, которые явно [задекларированы](https://ru.bem.info/method/declarations/).
 
-<pre><code class="lasso">echo "alias 'bemblock'='bem create -l desktop.blocks -b'" >> ~/.bashrc
-echo "alias 'bempage'='bem create -l desktop.bundles -b'" >> ~/.bashrc
-</code></pre>
+Получить декларацию с перечислением всех нужных блоков можно двумя способами: в `*.bemdecl.js` перечислить все нужные блоки (и не забывать добавлять и удалять их по мере разработки и рефакторинга), либо указать только корневой блок (в нашем случае `page`), а блоки, которые нужны корневому и всем последующим, указывать в их собственных списках зависимостей — [deps.js](https://ru.bem.info/technology/deps/). Второй путь гораздо гибче: сохраняется прицип БЭМ-методологии о том, что блок сам знает о себе всё, при удалении блока автоматически будут удалены и его зависимости, а при добавлении они автоматически включатся в сборку.
 
-## Генератор БЭМ-проектов на Yeoman
+Так как шаблон блока `page` создает блоки `header`, `main` и `footer`, мы явно укажем это в списке зависимостей в файле `page.deps.js`:
+```js
+({
+    shouldDeps: ['header', 'main', 'footer']
+})
+```
 
-Если вам необходимо изменить конфигурацию заготовки проекта — воспользуйтесь инструментом 
-* [generator-bem-stub](https://ru.bem.info/tools/bem/bem-stub/)
-* Видео [генератор БЭМ-проектов на Yeoman](https://ru.bem.info/talks/bemup-moscow-2014/#Генератор-БЭМ-проектов-на-Yeoman-—-Евгений-Гаврюшин)
+> Если вы имели опыт работы с `project-stub`, где нужные файлы попадали в сборку автоматически, то необходимость указывать зависимости вручную может показаться странной. Дело в том, что там у нас на руках заранее был готовый BEMJSON-файл, по которому можно было получить список всех необходимых сущностей. А в данном случае мы планируем генерировать BEMJSON в процессе сборки на основе шаблонов. При этом шаблоны необходимо собрать заранее, а значит декларацию нужных блоков потребуется описать самостоятельно.
 
+Отлично, теперь мы знаем как собрать шаблоны. Следующим шагом необходимо получить с их помощью BEMJSON на основе данных, а затем из BEMJSON сгенерировать HTML с помощью BEMHTML. В общем виде это выглядит так:
+```js
+var data = require('path/to/data.json'),
+    BEMTREE = require('path/to/bundle.bemtree.js').BEMTREE,
+    BEMHTML = require('path/to/bundle.bemhtml.js').BEMHTML,
+    bemjson = BEMTREE.apply(data),
+    html = BEMHTML.apply(bemjson);
 
-## Полезные ссылки
+require('fs').writeFileSync('index.html', html);
+```
 
-* [Создаем свой проект на БЭМ](https://ru.bem.info/articles/start-with-project-stub/)  
-* [Справочное руководство по BEMJSON](https://ru.bem.info/technology/bemjson/current/bemjson/)
-* [Руководство пользователя по BEMHTML](https://ru.bem.info/libs/bem-core/current/bemhtml/reference/)  
-* [Пошаговое руководство по i-bem.js](https://ru.bem.info/tutorials/bem-js-tutorial/)  
-* [Команды bem-tools](https://ru.bem.info/tools/bem/bem-tools/commands/)
+Эти преобразования будут работать и в браузере, если подключить `bundle.bemtree.js` и `bundle.bemhtml.js` на страницу. Останется только вставить полученную HTML-строку в DOM.
 
-## Примеры проектов на основе project-stub
+Осталось разобраться, как все-таки сгенерировать карточку пользователя на основе данных из `data.json`, вместо использования хардкода.
 
-* [Создаем меню для показа коллекций геообъектов с API Яндекс.Карт и БЭМ](https://ru.bem.info/tutorials/yamapsbem/)
-* [Создаем БЭМ-приложение на Leaflet и API 2GIS](https://ru.bem.info/tutorials/firm-card-story/)
-* [Мастер-класс: вы пишете БЭМ-проект, а мы подсказываем](https://github.com/bem/do-it-yourself-workshop)
-* [SSSR (Social Services Search Robot)](https://github.com/bem/sssr) — учебное приложение на полном стеке БЭМ
+Как видно в примере кода выше, данные мы передаем в вызов `BEMTREE.apply(data)`. При этом мы помним, что корневым блоком должен оказаться блок `page`. Достичь этого можно следующим образом:
 
-## Полезные инструменты
+```js
+var data = require('path/to/data.json');
+BEMTREE.apply({
+    block: 'page',
+    data: data // теперь данные попадут в контекст шаблона блока page
+});
+```
 
-* [bem-cli](https://ru.bem.info/blog/bem-cli/) — запусти bem-tools локально
-* [borschik](https://ru.bem.info/tools/optimizers/borschik/) — простой, но мощный сборщик файлов текстовых форматов
+Модифицируем код шаблона так, чтобы пробросить данные для вложенных в `page` блоков:
 
-## Видео
+```js
+block('page').content()(function() {
+    this.data = this.ctx.data; // this будет общим для всех потомков page,
+                               // так что они смогут использовать поле data
 
-* [Мастер-класс: разрабатываем сайт с нуля на полном стеке БЭМ-технологий](https://ru.bem.info/talks/bemup-minsk-2014/#Мастер-класс:-разрабатываем-сайт-с-нуля-на-полном-стеке-БЭМ-технологий-—-Жека-Константинов,-Дима-Белицкий-и-Слава-Аристов)
-* [Мастер-класс наоборот: вы пишете БЭМ-проект, а мы подсказываем](https://ru.bem.info/talks/bemup-spb-2014/#Мастер-класс-наоборот:-вы-пишете-БЭМ-проект,-а-мы-подсказываем-—-Евгений-Константинов,-Дима-Белицкий,-Яндекс)
-* [Инструменты фронтенд-разработчика](https://ru.bem.info/talks/bemup-moscow-2014/#Инструменты-фронтенд-разработчика-—-Владимир-Гриненко)
+    return [
+        { block: 'header' },
+        { block: 'main' },
+        { block: 'footer' }
+    ];
+]);
+```
 
-## Поднимаем окружение для разработки под Windows
+Тогда финальный вид BEMTREE-шаблона блока `main` окажется таким:
+```js
+block('main').content()(function() {
+    var data = this.data;
 
-* [bemup-workshop-vagrant](https://github.com/dab/bemup-workshop-vagrant/blob/master/README.ru.md) — Vagrant конфиг для установки виртуальной машины с Ubuntu сервером и предустановленными инструментами для разработки на Node.js
+    return {
+        block: 'user',
+        content: [
+            {
+                elem: 'name',
+                content: data.user
+            },
+            {
+                elem: 'company',
+                content: data.company
+            },
+            {
+                elem: 'city',
+                content: data.city
+            }
+        ]
+    };
+});
+```
+
+Из соображений унификации в качестве корневого блока удобно использовать блок `root`, который будет отвечать за пробрасывание данных вглубь дерева и создавать `page`:
+```js
+block('root').replace()(function() {
+    return {
+        block: 'page',
+        title: 'TODO',
+        head: [
+            { elem: 'css', url: 'index.min.css' }
+        ],
+        scripts: [
+            { elem: 'js', url: 'index.min.js' }
+        ],
+        mods: { theme: 'islands' }
+    };
+});
+```

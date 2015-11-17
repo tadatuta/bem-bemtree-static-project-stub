@@ -16,10 +16,7 @@
  * nodeConfig.addTech(require('enb/techs/html-from-bemjson'));
  * ```
  */
-var vow = require('vow'),
-    vfs = require('enb/lib/fs/async-fs'),
-    asyncRequire = require('enb/lib/fs/async-require'),
-    dropRequireCache = require('enb/lib/fs/drop-require-cache');
+var dropRequireCache = require('enb/lib/fs/drop-require-cache');
 
 module.exports = require('enb/lib/build-flow').create()
     .name('html-from-bemtree')
@@ -27,17 +24,12 @@ module.exports = require('enb/lib/build-flow').create()
     .useSourceFilename('bemtreeTarget', '?.bemtree.js')
     .useSourceFilename('bemhtmlTarget', '?.bemhtml.js')
     .builder(function(bemtreeFilename, bemhtmlFilename) {
+        dropRequireCache(require, bemtreeFilename);
         dropRequireCache(require, bemhtmlFilename);
 
-        return vow.all([
-                asyncRequire(bemtreeFilename),
-                asyncRequire(bemhtmlFilename)
-            ])
-            .spread(function(bemtree, bemhtml) {
-                return bemtree.BEMTREE.apply({ block: 'root' })
-                    .then(function(bemjson) {
-                        return bemhtml.BEMHTML.apply(bemjson);
-                    });
-            });
+        var BEMTREE = require(bemtreeFilename).BEMTREE,
+            BEMHTML = require(bemhtmlFilename).BEMHTML;
+
+        return BEMHTML.apply(BEMTREE.apply({ block: 'root' }));
     })
     .createTech();
