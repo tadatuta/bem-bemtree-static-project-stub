@@ -1,7 +1,7 @@
 {
   "author": "Vladimir Grinenko",
   "name": "bem-bemtree-static-project-stub",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "repository": {
     "type": "git",
     "url": "git://github.com/tadatuta/bem-bemtree-static-project-stub.git"
@@ -10,14 +10,14 @@
     "node": ">=0.12"
   },
   "dependencies": {
-    "bower": "^1.6.5"
+    "bower": "^1.7.7"
   },
   "devDependencies": {
     "borschik-tech-cleancss": "^2.1.0",
-    "enb": "^1.1.0",
-    "enb-bem-techs": "^2.1.0",
-    "enb-bemxjst": "tadatuta/enb-bemxjst#d41f632",
-    "enb-borschik": "^2.1.0",
+    "enb": "^1.1.2",
+    "enb-bem-techs": "^2.2.1",
+    "enb-bemxjst": "tadatuta/enb-bemxjst#d271dc6",
+    "enb-borschik": "^2.3.0",
     "enb-js": "^1.1.0",
     "enb-stylus": "^2.2.0"
   },
@@ -25,7 +25,7 @@
     "start": "enb server",
     "make": "enb make",
     "postinstall": "npm run deps",
-    "deps": "bower i"
+    "deps": "bower i --allow-root"
   },
   "private": true
 }
