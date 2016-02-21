@@ -1,12 +1,14 @@
 block('root').replace()(function() {
+    var data = this.data = this.ctx.data;
+
     return {
         block: 'page',
-        title: 'TODO',
+        title: data.title,
         head: [
-            { elem: 'css', url: 'index.min.css' }
+            { elem: 'css', url: '../index.min.css' }
         ],
         scripts: [
-            { elem: 'js', url: 'index.min.js' }
+            { elem: 'js', url: '../index.min.js' }
         ],
         mods: { theme: 'islands' }
     };

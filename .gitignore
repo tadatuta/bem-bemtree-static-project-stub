@@ -17,3 +17,5 @@ npm-debug.log
 !*pages*/*/*.bemdecl.js
 *pages*/*/*.bemhtml.bemdecl.js
 !*pages*/.bem/*
+
+output

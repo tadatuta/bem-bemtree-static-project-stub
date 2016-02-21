@@ -4,7 +4,8 @@ block('page').content()(function() {
             block: 'header'
         },
         {
-            block: 'main'
+            block: 'main',
+            mods: { type: this.data.type }
         },
         {
             block: 'footer'

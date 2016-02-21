@@ -14,12 +14,15 @@
   },
   "devDependencies": {
     "borschik-tech-cleancss": "^2.1.0",
+    "del": "^2.2.0",
     "enb": "^1.1.2",
     "enb-bem-techs": "^2.2.1",
     "enb-bemxjst": "tadatuta/enb-bemxjst#d271dc6",
     "enb-borschik": "^2.3.0",
     "enb-js": "^1.1.0",
-    "enb-stylus": "^2.2.0"
+    "enb-stylus": "^2.2.0",
+    "gulp": "github:gulpjs/gulp#4.0",
+    "mkdirp": "^0.5.1"
   },
   "scripts": {
     "start": "enb server",
