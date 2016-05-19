@@ -19,10 +19,10 @@
 var dropRequireCache = require('enb/lib/fs/drop-require-cache');
 
 module.exports = require('enb/lib/build-flow').create()
-    .name('html-from-bemtree')
-    .target('destTarget', '?.html')
-    .useSourceFilename('bemtreeTarget', '?.bemtree.js')
-    .useSourceFilename('bemhtmlTarget', '?.bemhtml.js')
+    .name('bemtree-to-html')
+    .target('target', '?.html')
+    .useSourceFilename('bemtree', '?.bemtree.js')
+    .useSourceFilename('bemhtml', '?.bemhtml.js')
     .builder(function(bemtreeFilename, bemhtmlFilename) {
         dropRequireCache(require, bemtreeFilename);
         dropRequireCache(require, bemhtmlFilename);
