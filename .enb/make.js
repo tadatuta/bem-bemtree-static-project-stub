@@ -55,7 +55,10 @@ module.exports = function(config) {
             [techs.bemtree, { sourceSuffixes: ['bemtree', 'bemtree.js'] }],
 
             // bemhtml
-            [techs.bemhtml, { sourceSuffixes: ['bemhtml', 'bemhtml.js'] }],
+            [techs.bemhtml, {
+                sourceSuffixes: ['bemhtml', 'bemhtml.js'],
+                forceBaseTemplates: true
+            }],
 
             // html
             [techs.bemtreeToHtml],
