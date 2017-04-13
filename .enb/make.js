@@ -7,7 +7,19 @@ var techs = {
         borschik: require('enb-borschik/techs/borschik'),
 
         // css
-        stylus: require('enb-stylus/techs/stylus'),
+        postcss: require('enb-postcss/techs/enb-postcss'),
+        postcssPlugins: [
+            require('postcss-import')(),
+            require('postcss-each'),
+            require('postcss-for'),
+            require('postcss-simple-vars')(),
+            require('postcss-calc')(),
+            require('postcss-nested'),
+            require('rebem-css'),
+            require('postcss-url')({ url: 'inline' }),
+            require('autoprefixer')(),
+            require('postcss-reporter')()
+        ],
 
         // js
         browserJs: require('enb-js/techs/browser-js'),
@@ -17,16 +29,16 @@ var techs = {
 
         // bemhtml
         bemhtml: require('enb-bemxjst/techs/bemhtml'),
-        bemtreeToHtml: require('./techs/bemtree-to-html')
+        bemjsonToHtml: require('./techs/bemtree-to-html')
     },
     enbBemTechs = require('enb-bem-techs'),
     levels = [
-        { path: 'libs/bem-core/common.blocks', check: false },
-        { path: 'libs/bem-core/desktop.blocks', check: false },
-        { path: 'libs/bem-components/common.blocks', check: false },
-        { path: 'libs/bem-components/desktop.blocks', check: false },
-        { path: 'libs/bem-components/design/common.blocks', check: false },
-        { path: 'libs/bem-components/design/desktop.blocks', check: false },
+        { path: 'node_modules/bem-core/common.blocks', check: false },
+        { path: 'node_modules/bem-core/desktop.blocks', check: false },
+        { path: 'node_modules/bem-components/common.blocks', check: false },
+        { path: 'node_modules/bem-components/desktop.blocks', check: false },
+        { path: 'node_modules/bem-components/design/common.blocks', check: false },
+        { path: 'node_modules/bem-components/design/desktop.blocks', check: false },
         'common.blocks',
         'desktop.blocks'
     ];
@@ -43,12 +55,10 @@ module.exports = function(config) {
             [enbBemTechs.files],
 
             // css
-            [techs.stylus, {
+            [techs.postcss, {
                 target: '?.css',
-                sourcemap: false,
-                autoprefixer: {
-                    browsers: ['ie >= 10', 'last 2 versions', 'opera 12.1', '> 2%']
-                }
+                oneOfSourceSuffixes: ['post.css', 'css'],
+                plugins: techs.postcssPlugins
             }],
 
             // bemtree
@@ -57,11 +67,12 @@ module.exports = function(config) {
             // bemhtml
             [techs.bemhtml, {
                 sourceSuffixes: ['bemhtml', 'bemhtml.js'],
-                forceBaseTemplates: true
+                forceBaseTemplates: true,
+                engineOptions : { elemJsInstances : true }
             }],
 
             // html
-            [techs.bemtreeToHtml],
+            [techs.bemjsonToHtml],
 
             // client bemhtml
             [enbBemTechs.depsByTechToBemdecl, {
@@ -81,7 +92,8 @@ module.exports = function(config) {
             [techs.bemhtml, {
                 target: '?.browser.bemhtml.js',
                 filesTarget: '?.bemhtml.files',
-                sourceSuffixes: ['bemhtml', 'bemhtml.js']
+                sourceSuffixes: ['bemhtml', 'bemhtml.js'],
+                engineOptions : { elemJsInstances : true }
             }],
 
             // js
